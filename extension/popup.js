@@ -1,5 +1,5 @@
 const $ = id => document.getElementById(id);
-const DEFAULT_BACKEND = "http://127.0.0.1:5000";
+const DEFAULT_BACKEND = "https://sentinel-job-fraud-scanner.onrender.com";
 
 function showStatus(msg, ok) {
   const el = $("status");

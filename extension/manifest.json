@@ -3,18 +3,36 @@
   "name": "Sentinel — Job Posting Fraud Scanner",
   "version": "1.0.0",
   "description": "Scan the job posting you're viewing (LinkedIn, Indeed, Naukri, Apna, Foundit, Shine and more) for fraud signals, powered by your own Sentinel backend.",
-  "icons": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "action": {
     "default_popup": "popup.html",
-    "default_icon": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
-  "background": { "service_worker": "background.js" },
-  "permissions": ["storage"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "storage"
+  ],
   "host_permissions": [
     "http://127.0.0.1:5000/*",
-    "http://localhost:5000/*"
+    "http://localhost:5000/*",
+    "https://sentinel-job-fraud-scanner.onrender.com/*"
   ],
-  "optional_host_permissions": ["http://*/*", "https://*/*"],
+  "optional_host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
   "content_scripts": [
     {
       "matches": [
