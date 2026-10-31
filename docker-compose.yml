@@ -1,0 +1,21 @@
+# docker compose up --build        ->  http://localhost:5000
+# Put SENTINEL_SECRET_KEY (and optionally DATABASE_URL) in a .env file next to this one.
+services:
+  sentinel:
+    build: .
+    ports:
+      - "5000:5000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      SENTINEL_ENV: production
+      # Plain-http localhost testing: browsers drop Secure cookies, so allow http here.
+      # REMOVE this line when you deploy behind https.
+      SENTINEL_COOKIE_SECURE: "0"
+    volumes:
+      - sentinel-data:/app/instance
+    restart: unless-stopped
+
+volumes:
+  sentinel-data:

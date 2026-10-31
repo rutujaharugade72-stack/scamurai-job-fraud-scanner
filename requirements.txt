@@ -1,0 +1,20 @@
+flask>=3.0
+gunicorn>=22.0
+# Pinned to the version the bundled models/*.pkl were trained with; a different
+# scikit-learn can unpickle them wrongly. If you retrain (python src/train.py) you may upgrade.
+scikit-learn==1.9.1
+scipy
+pandas
+numpy
+joblib
+matplotlib
+seaborn
+requests
+beautifulsoup4
+reportlab
+shap
+dnspython
+python-whois
+flask-sqlalchemy
+flask-login
+psycopg2-binary

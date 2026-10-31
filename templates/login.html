@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log in — Sentinel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="scanline" aria-hidden="true"></div>
+
+<div class="auth-wrap">
+  <div class="auth-card card">
+    <div class="brand auth-brand">
+      <span class="brand-mark">◈</span>
+      <span class="brand-name">Sentinel</span>
+    </div>
+    <h1 class="auth-title">Log in</h1>
+    <p class="auth-sub">Your scan history is tied to your account and saved server-side.</p>
+
+    {% if error %}<p class="auth-error">{{ error }}</p>{% endif %}
+
+    <form method="POST" class="auth-form">
+      <label>Username
+        <input type="text" name="username" autocomplete="username" required autofocus>
+      </label>
+      <label>Password
+        <input type="password" name="password" autocomplete="current-password" required>
+      </label>
+      <button type="submit" class="btn btn-primary auth-submit">Log in</button>
+    </form>
+
+    <p class="auth-demo">Demo account: <code>demo</code> / <code>demo1234</code></p>
+    <p class="auth-switch">No account yet? <a href="{{ url_for('register') }}">Register</a></p>
+  </div>
+</div>
+
+</body>
+</html>

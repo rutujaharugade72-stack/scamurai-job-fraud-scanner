@@ -1,0 +1,25 @@
+SENTINEL - CROSS-VALIDATED EVALUATION
+============================================
+5-fold stratified CV | 17880 postings | 866 fraudulent (4.8%)
+Metrics are for the FRAUD class at the default 0.5 threshold; mean +- std over folds.
+
+Linear SVM   <-- best by CV F1
+----------
+  precision : 0.9282 +- 0.0260
+  recall    : 0.7518 +- 0.0390
+  f1        : 0.8300 +- 0.0250
+  roc_auc   : 0.9891 +- 0.0026
+  pr_auc    : 0.9024 +- 0.0257
+  Threshold for best F1            : 0.366  (P=0.881, R=0.819, F1=0.849)
+  Threshold for recall >= 0.90      : 0.162  (P=0.674, R=0.901, F1=0.771)
+
+Logistic Regression
+-------------------
+  precision : 0.6869 +- 0.0280
+  recall    : 0.9007 +- 0.0197
+  f1        : 0.7788 +- 0.0170
+  roc_auc   : 0.9892 +- 0.0026
+  pr_auc    : 0.8943 +- 0.0272
+  Threshold for best F1            : 0.764  (P=0.870, R=0.801, F1=0.834)
+  Threshold for recall >= 0.90      : 0.512  (P=0.700, R=0.901, F1=0.787)
+

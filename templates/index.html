@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sentinel — AI Job Posting Fraud Scanner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="scanline" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">◈</span>
+    <span class="brand-name">Sentinel</span>
+    <span class="brand-tag">Job Posting Fraud Scanner</span>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-tab="analyze" role="tab">Analyze</button>
+    <button class="tab" data-tab="batch" role="tab">Batch</button>
+    <button class="tab" data-tab="dashboard" role="tab">Dashboard</button>
+    <button class="tab" data-tab="insights" role="tab">Model Insights</button>
+    <button class="tab" data-tab="history" role="tab">History</button>
+    <button class="tab" data-tab="about" role="tab">About</button>
+  </nav>
+  <div class="account-box">
+    <span class="account-user">{{ current_user.username }}</span>
+    <a href="{{ url_for('logout') }}" class="account-logout">Log out</a>
+  </div>
+</header>
+
+<main>
+
+  <!-- ================= ANALYZE ================= -->
+  <section id="panel-analyze" class="panel active">
+
+    <div class="analyze-grid">
+
+      <!-- INPUT COLUMN -->
+      <div class="input-col">
+
+        <div class="card import-card">
+          <h2 class="card-title">Import from a link</h2>
+          <p class="card-sub">Paste a job posting URL (LinkedIn, Indeed, Naukri, Greenhouse, Lever, company career pages). We'll pull the structured details automatically where the site allows it.</p>
+          <div class="url-row">
+            <input type="url" id="url-input" placeholder="https://www.linkedin.com/jobs/view/…">
+            <button id="import-btn" class="btn btn-secondary">
+              <span class="btn-label">Fetch</span>
+              <span class="spinner" hidden></span>
+            </button>
+          </div>
+          <p id="import-status" class="import-status"></p>
+
+          <div class="divider"><span>or, more reliable for LinkedIn</span></div>
+
+          <label for="paste-input" class="paste-label">Paste the posting text</label>
+          <p class="card-sub">Sites like LinkedIn load the real content with JavaScript, so a direct link fetch often can't see it. Select the job details on the page you're viewing, copy, and paste them here instead — we'll still auto-fill every field below.</p>
+          <textarea id="paste-input" rows="4" placeholder="Paste the full job posting text here (title, description, requirements, benefits — however much you've got)…"></textarea>
+          <button id="parse-text-btn" class="btn btn-secondary btn-block">
+            <span class="btn-label">Auto-fill from pasted text</span>
+            <span class="spinner" hidden></span>
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="card-title-row">
+            <h2 class="card-title">Job details</h2>
+            <button id="clear-btn" class="link-btn">Clear all</button>
+          </div>
+
+          <div class="field">
+            <label for="f-title">Job title</label>
+            <input type="text" id="f-title" placeholder="e.g. Senior Python Developer">
+          </div>
+
+          <div class="field">
+            <label for="f-company">Company profile</label>
+            <textarea id="f-company" rows="3" placeholder="What the company says about itself…"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="f-description">Job description</label>
+            <textarea id="f-description" rows="6" placeholder="Paste the full job description…"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="f-requirements">Requirements</label>
+            <textarea id="f-requirements" rows="4" placeholder="Skills, qualifications, experience…"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="f-benefits">Benefits / salary text</label>
+            <textarea id="f-benefits" rows="3" placeholder="Perks, compensation, application details…"></textarea>
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label for="f-salary">Salary range (optional)</label>
+              <input type="text" id="f-salary" placeholder="e.g. $60,000 - $80,000">
+            </div>
+            <div class="field">
+              <label for="f-employment">Employment type</label>
+              <select id="f-employment">
+                <option>Unknown</option><option>Full-time</option><option>Part-time</option>
+                <option>Contract</option><option>Temporary</option><option>Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="f-experience">Required experience</label>
+              <select id="f-experience">
+                <option>Unknown</option><option>Internship</option><option>Entry level</option>
+                <option>Associate</option><option>Mid-Senior level</option><option>Director</option><option>Executive</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="f-education">Required education</label>
+              <select id="f-education">
+                <option>Unknown</option><option>High School or equivalent</option><option>Certification</option>
+                <option>Some College Coursework Completed</option><option>Vocational</option>
+                <option>Associate Degree</option><option>Bachelor's Degree</option><option>Master's Degree</option><option>Doctorate</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="f-industry">Industry</label>
+              <input type="text" id="f-industry" placeholder="e.g. Information Technology">
+            </div>
+            <div class="field">
+              <label for="f-function">Job function</label>
+              <input type="text" id="f-function" placeholder="e.g. Engineering">
+            </div>
+          </div>
+
+          <div class="toggle-row">
+            <label class="toggle"><input type="checkbox" id="f-logo"><span>Company logo shown</span></label>
+            <label class="toggle"><input type="checkbox" id="f-remote"><span>Telecommuting / remote</span></label>
+            <label class="toggle" title="Not visible on a job posting page itself — this reflects the application form, so set it manually if you know it."><input type="checkbox" id="f-questions"><span>Screening questions present</span></label>
+          </div>
+
+          <button id="analyze-btn" class="btn btn-primary btn-block">
+            <span class="btn-label">Scan posting</span>
+            <span class="spinner" hidden></span>
+          </button>
+          <p id="analyze-error" class="error-text"></p>
+        </div>
+      </div>
+
+      <!-- RESULT COLUMN -->
+      <div class="result-col">
+        <div id="result-empty" class="card result-placeholder">
+          <div class="radar" aria-hidden="true">
+            <div class="radar-sweep"></div>
+          </div>
+          <p>Enter a job posting on the left, or import one from a link, then run a scan.</p>
+        </div>
+
+        <div id="result-card" class="card result-card" hidden>
+          <div class="verdict-row">
+            <div id="verdict-badge" class="verdict-badge">
+              <span id="verdict-label"></span>
+            </div>
+            <div class="gauge-wrap">
+              <svg viewBox="0 0 120 120" class="gauge">
+                <circle cx="60" cy="60" r="52" class="gauge-track"/>
+                <circle id="gauge-fill" cx="60" cy="60" r="52" class="gauge-fill"/>
+              </svg>
+              <div class="gauge-center">
+                <span id="gauge-value">--</span>
+                <small>confidence</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="prob-bars">
+            <div class="prob-row">
+              <span class="prob-label">Legitimate</span>
+              <div class="prob-track"><div id="legit-bar" class="prob-fill legit"></div></div>
+              <span id="legit-pct" class="prob-pct">--%</span>
+            </div>
+            <div class="prob-row">
+              <span class="prob-label">Fraudulent</span>
+              <div class="prob-track"><div id="fraud-bar" class="prob-fill fraud"></div></div>
+              <span id="fraud-pct" class="prob-pct">--%</span>
+            </div>
+          </div>
+
+          <div id="verify-wrap" class="verify-wrap" hidden>
+            <h3 class="section-label">External verification <span class="method-note">(live domain / email checks)</span></h3>
+            <div id="verify-body"></div>
+          </div>
+
+          <div id="structured-impact-wrap" class="impact-wrap" hidden>
+            <h3 class="section-label">Structured-field impact <span class="method-note">(counterfactual ablation — each field reset to baseline, text held fixed)</span></h3>
+            <div id="structured-impact-list" class="impact-list"></div>
+          </div>
+
+          <div id="risk-factors-wrap" class="risk-wrap" hidden>
+            <h3 class="section-label">Heuristic risk signals</h3>
+            <ul id="risk-list" class="risk-list"></ul>
+          </div>
+
+          <div id="positive-factors-wrap" class="risk-wrap positive-wrap" hidden>
+            <h3 class="section-label legit-color">Why this looks legitimate</h3>
+            <ul id="positive-list" class="risk-list positive-list"></ul>
+          </div>
+
+          <div class="explain-grid">
+            <div>
+              <h3 class="section-label fraud-color">Pushed toward FRAUDULENT</h3>
+              <div id="fraud-words" class="chip-row"></div>
+            </div>
+            <div>
+              <h3 class="section-label legit-color">Pushed toward LEGITIMATE</h3>
+              <div id="legit-words" class="chip-row"></div>
+            </div>
+          </div>
+          <p id="explain-method-note" class="method-note explain-method-note"></p>
+
+          <p class="model-footnote">Model: <span id="model-used-label">—</span> · This is a statistical prediction, not proof. Always verify the employer independently.</p>
+        </div>
+
+        <!-- Detailed report — shown automatically once a scan completes -->
+        <div id="detailed-report-card" class="card report-card" hidden>
+          <div class="report-card-head">
+            <h2 class="card-title">Detailed Report</h2>
+            <div class="report-actions">
+              <button id="download-pdf-btn" class="btn btn-secondary">
+                <span class="btn-label">Download PDF</span>
+                <span class="spinner" hidden></span>
+              </button>
+            </div>
+          </div>
+          <div id="detailed-report-body"></div>
+          <div id="feedback-inline" hidden></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= DASHBOARD ================= -->
+  <section id="panel-dashboard" class="panel">
+    <h1 class="page-title">Analytics Dashboard</h1>
+    <p class="page-sub">Aggregated from your own scan history — updates every time you run a scan.</p>
+
+    <div id="dashboard-empty" class="card result-placeholder">
+      <p>No scans yet. Run a few analyses in the Analyze tab and your trends will show up here.</p>
+    </div>
+
+    <div id="dashboard-content" hidden>
+      <div id="dashboard-metrics" class="metrics-grid"></div>
+
+      <div class="chart-grid dash-grid">
+        <div class="card chart-card">
+          <h3>Scans over the last 14 days</h3>
+          <div id="trend-chart" class="svg-chart-holder"></div>
+        </div>
+        <div class="card chart-card">
+          <h3>Verdict split</h3>
+          <div id="donut-chart" class="svg-chart-holder donut-holder"></div>
+        </div>
+        <div class="card chart-card">
+          <h3>Most common risk signals</h3>
+          <div id="risk-chart" class="svg-chart-holder"></div>
+        </div>
+        <div class="card chart-card">
+          <h3>Top fraud-indicating words in your scans</h3>
+          <div id="words-chart" class="svg-chart-holder"></div>
+        </div>
+        <div class="card chart-card dash-wide">
+          <h3>By employment type</h3>
+          <div id="employment-chart" class="svg-chart-holder"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= INSIGHTS ================= -->
+  <section id="panel-insights" class="panel">
+    <h1 class="page-title">Model Insights</h1>
+    <p class="page-sub">Trained &amp; evaluated on the EMSCAD job postings dataset.</p>
+
+    <div id="metrics-cards" class="metrics-grid"></div>
+
+    <div class="chart-grid">
+      <div class="card chart-card">
+        <h3>Model comparison</h3>
+        <img src="{{ url_for('assets', filename='model_comparison.png') }}" alt="Model comparison chart">
+      </div>
+      <div class="card chart-card">
+        <h3>Confusion matrix (best model)</h3>
+        <img src="{{ url_for('assets', filename='confusion_matrix.png') }}" alt="Confusion matrix">
+      </div>
+      <div class="card chart-card">
+        <h3>Precision-recall (cross-validated)</h3>
+        <img src="{{ url_for('assets', filename='pr_curve.png') }}" alt="Precision-recall curve" onerror="this.closest('.chart-card').hidden = true">
+      </div>
+      <div class="card chart-card">
+        <h3>ROC curves</h3>
+        <img src="{{ url_for('assets', filename='roc_curves.png') }}" alt="ROC curves">
+      </div>
+      <div class="card chart-card">
+        <h3>Class distribution</h3>
+        <img src="{{ url_for('assets', filename='class_distribution.png') }}" alt="Class distribution">
+      </div>
+      <div class="card chart-card">
+        <h3>Posting length by class</h3>
+        <img src="{{ url_for('assets', filename='text_length.png') }}" alt="Text length by class">
+      </div>
+      <div class="card chart-card">
+        <h3>Top fraud-indicating words</h3>
+        <img src="{{ url_for('assets', filename='top_fraud_words.png') }}" alt="Top fraud words">
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= BATCH ================= -->
+  <section id="panel-batch" class="panel">
+    <h1 class="page-title">Batch Scan</h1>
+    <p class="page-sub">Upload a CSV of job postings (up to 200 rows) and get a verdict for every row.
+      Needs a header row with at least a <code>title</code> or <code>description</code> column.
+      Optional: <code>company_profile</code>, <code>requirements</code>, <code>benefits</code>,
+      <code>salary_range</code>, <code>employment_type</code>, <code>telecommuting</code>, <code>has_company_logo</code>.</p>
+
+    <div class="card batch-card">
+      <div class="batch-controls">
+        <input type="file" id="batch-file" accept=".csv,text/csv">
+        <label class="batch-save"><input type="checkbox" id="batch-save"> Save results to History</label>
+        <button id="batch-run-btn" class="btn btn-primary">Scan CSV</button>
+        <button id="batch-template-btn" class="btn btn-ghost" type="button">Download template</button>
+      </div>
+      <p id="batch-error" class="error-text" hidden></p>
+    </div>
+
+    <div id="batch-summary" class="metrics-grid" hidden></div>
+
+    <div id="batch-results-wrap" hidden>
+      <div class="batch-toolbar">
+        <select id="batch-filter">
+          <option value="ALL">All rows</option>
+          <option value="High">High risk only</option>
+          <option value="Medium">Medium risk only</option>
+          <option value="Low">Low risk only</option>
+        </select>
+        <button id="batch-export-btn" class="btn btn-secondary">Export results (CSV)</button>
+      </div>
+      <table class="history-table">
+        <thead><tr><th>#</th><th>Title</th><th>Verdict</th><th>Fraud probability</th><th>Risk</th><th>Red flags</th></tr></thead>
+        <tbody id="batch-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= HISTORY ================= -->
+  <section id="panel-history" class="panel">
+    <div class="page-title-row">
+      <div>
+        <h1 class="page-title">Scan History</h1>
+        <p class="page-sub">Synced to your account — visible from any device you log into.</p>
+      </div>
+      <button id="clear-history-btn" class="btn btn-ghost">Clear history</button>
+    </div>
+    <div id="history-tools" class="history-tools" hidden>
+      <input type="text" id="history-search" placeholder="Search by job title…" autocomplete="off">
+      <select id="history-filter">
+        <option value="ALL">All results</option>
+        <option value="FRAUDULENT">Fraudulent only</option>
+        <option value="LEGITIMATE">Legitimate only</option>
+      </select>
+      <span id="history-count" class="history-count"></span>
+    </div>
+    <div id="history-empty" class="card result-placeholder">
+      <p>No scans yet. Results you run in the Analyze tab will appear here.</p>
+    </div>
+    <table id="history-table" class="history-table" hidden>
+      <thead>
+        <tr><th>Time</th><th>Title</th><th>Verdict</th><th>Confidence</th><th></th></tr>
+      </thead>
+      <tbody id="history-body"></tbody>
+    </table>
+    <p class="page-sub" id="history-hint" hidden style="margin-top: 14px;">Click any row to open its full detailed report.</p>
+  </section>
+
+  <!-- ================= ABOUT ================= -->
+  <section id="panel-about" class="panel">
+    <h1 class="page-title">About this project</h1>
+    <div class="about-grid">
+      <div class="card">
+        <h3>What it does</h3>
+        <p>Sentinel classifies a job posting as likely <strong>legitimate</strong> or <strong>fraudulent</strong> using a supervised machine-learning model trained on the EMSCAD dataset of 17,880 real-world job listings (866 confirmed fraudulent).</p>
+      </div>
+      <div class="card">
+        <h3>Pipeline</h3>
+        <ol class="steps">
+          <li>Clean &amp; normalize text (title, company profile, description, requirements, benefits)</li>
+          <li>Engineer structured features (employment type, experience, education, industry, function, logo/remote/questions flags)</li>
+          <li>Vectorize text with TF-IDF (unigrams + bigrams)</li>
+          <li>Combine text + structured features into one feature matrix</li>
+          <li>Train &amp; compare 5 classifiers: Logistic Regression, Naive Bayes, Random Forest, Linear SVM, Gradient Boosting</li>
+          <li>Select the best model by F1-score; serve it behind a Flask REST API</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h3>Try it on a real listing</h3>
+        <p>Paste a link from LinkedIn, Indeed, Naukri, or a company careers page in the Analyze tab. Sentinel reads the page's structured job-posting data (the same schema.org markup Google Jobs uses) to auto-fill the form — no manual copy-paste needed. If a site blocks automated access, you can always fall back to pasting the details by hand.</p>
+      </div>
+      <div class="card">
+        <h3>Limitations</h3>
+        <p>This is a statistical pattern-matcher trained on historical data, not a guarantee. Always independently verify an employer's official website, domain, and contact details before sharing personal information or applying.</p>
+      </div>
+    </div>
+
+    <div class="card" id="extension-card" style="margin-top: 20px;">
+      <h3>Browser Extension</h3>
+      <p class="card-sub" style="margin-bottom: 14px;">Scan a job posting without leaving LinkedIn, Indeed, or Naukri. The extension reads the page you're already viewing (logged in, fully rendered) and sends it here — the same read the site itself blocks for a logged-out server-side fetch.</p>
+      <ol class="steps">
+        <li>Load the <code>extension/</code> folder from the project via <code>chrome://extensions</code> &rarr; Developer mode &rarr; Load unpacked</li>
+        <li>Click the Sentinel icon in your toolbar and paste the API token below</li>
+        <li>Open a job posting and click "Scan with Sentinel"</li>
+      </ol>
+      <div class="token-row">
+        <input id="ext-token-field" type="password" readonly value="" placeholder="Click Reveal to generate/show your token">
+        <button id="ext-token-reveal" class="btn btn-secondary">Reveal</button>
+        <button id="ext-token-copy" class="btn btn-secondary" hidden>Copy</button>
+        <button id="ext-token-regen" class="btn btn-ghost" hidden>Regenerate</button>
+      </div>
+      <p class="page-sub" id="ext-token-status" style="margin: 8px 0 0;"></p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= REPORT MODAL (History) ================= -->
+<div id="report-modal" class="modal-backdrop" hidden>
+  <div class="modal-box">
+    <button id="modal-close-btn" class="modal-close" aria-label="Close">✕</button>
+    <div class="report-card-head">
+      <h2 class="card-title">Detailed Report</h2>
+      <div class="report-actions">
+        <button id="modal-download-pdf-btn" class="btn btn-secondary">
+          <span class="btn-label">Download PDF</span>
+          <span class="spinner" hidden></span>
+        </button>
+      </div>
+    </div>
+    <div id="modal-report-body"></div>
+    <div id="feedback-modal" hidden></div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

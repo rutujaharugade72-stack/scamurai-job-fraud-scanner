@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sentinel</title>
+<style>
+  :root {
+    --bg: #10131c; --surface: #1a1f2e; --surface-2: #212739; --border: #2a3145;
+    --text: #e7e9f0; --text-dim: #9099b3; --brand: #f2a83c; --legit: #2ecc9b; --fraud: #ef5a6f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    width: 300px; margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, "Segoe UI", Inter, Roboto, sans-serif; font-size: 13px;
+  }
+  .head { display: flex; align-items: center; gap: 8px; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .head .mark { color: var(--brand); font-size: 16px; }
+  .head .title { font-weight: 700; font-size: 14px; }
+  .body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  label { font-size: 11.5px; color: var(--text-dim); font-weight: 600; display: block; margin-bottom: 4px; }
+  input {
+    width: 100%; background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+    border-radius: 7px; padding: 8px 10px; font-size: 12.5px; font-family: inherit;
+  }
+  input:focus { outline: none; border-color: var(--brand); }
+  .row { display: flex; gap: 8px; }
+  button {
+    flex: 1; padding: 9px 10px; border-radius: 7px; border: 1px solid var(--border);
+    background: var(--surface-2); color: var(--text); font-size: 12.5px; font-weight: 600; cursor: pointer;
+  }
+  button.primary { background: var(--brand); color: var(--bg); border-color: var(--brand); }
+  button:disabled { opacity: 0.6; cursor: default; }
+  #status { font-size: 12px; padding: 8px 10px; border-radius: 7px; display: none; line-height: 1.5; }
+  #status.ok { display: block; background: rgba(46,204,155,0.12); color: var(--legit); }
+  #status.err { display: block; background: rgba(239,90,111,0.12); color: var(--fraud); }
+  .hint { color: #5c6584; font-size: 10.5px; line-height: 1.5; margin: 0; }
+  .hint a { color: var(--brand); }
+</style>
+</head>
+<body>
+  <div class="head"><span class="mark">&#9670;</span><span class="title">Sentinel</span></div>
+  <div class="body">
+    <div>
+      <label for="backend-url">Backend URL</label>
+      <input id="backend-url" placeholder="http://127.0.0.1:5000">
+    </div>
+    <div>
+      <label for="api-token">API token</label>
+      <input id="api-token" type="password" placeholder="Paste from the Sentinel web app">
+    </div>
+    <div id="status"></div>
+    <div class="row">
+      <button id="test-btn">Test connection</button>
+      <button id="save-btn" class="primary">Save</button>
+    </div>
+    <p class="hint">Get your token from the Sentinel web app &rarr; <b>About</b> tab &rarr; <i>Browser Extension</i>. Then open a job posting on LinkedIn, Indeed, or Naukri and click "Scan with Sentinel".</p>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,209 @@
+{
+  "dataset_rows": 17880,
+  "fraudulent_count": 866,
+  "legitimate_count": 17014,
+  "test_size": 0.2,
+  "random_state": 42,
+  "text_fields": [
+    "title",
+    "company_profile",
+    "description",
+    "requirements",
+    "benefits"
+  ],
+  "categorical_fields": [
+    "employment_type",
+    "required_experience",
+    "required_education",
+    "industry",
+    "function"
+  ],
+  "binary_fields": [
+    "telecommuting",
+    "has_company_logo",
+    "has_questions"
+  ],
+  "best_model": "Linear SVM",
+  "model_comparison": {
+    "Logistic Regression": {
+      "accuracy": 0.9784675615212528,
+      "precision": 0.7181818181818181,
+      "recall": 0.9132947976878613,
+      "f1": 0.8040712468193384,
+      "roc_auc": 0.989230855467549
+    },
+    "Naive Bayes": {
+      "accuracy": 0.9700782997762863,
+      "precision": 0.6774193548387096,
+      "recall": 0.7283236994219653,
+      "f1": 0.7019498607242339,
+      "roc_auc": 0.9604123529221921
+    },
+    "Random Forest": {
+      "accuracy": 0.9804250559284117,
+      "precision": 0.9904761904761905,
+      "recall": 0.6011560693641619,
+      "f1": 0.7482014388489209,
+      "roc_auc": 0.9927656488069859
+    },
+    "Linear SVM": {
+      "accuracy": 0.9888143176733781,
+      "precision": 0.965034965034965,
+      "recall": 0.7976878612716763,
+      "f1": 0.8734177215189873,
+      "roc_auc": 0.9883747594353163
+    },
+    "Gradient Boosting": {
+      "accuracy": 0.9818232662192393,
+      "precision": 0.95,
+      "recall": 0.6589595375722543,
+      "f1": 0.7781569965870307,
+      "roc_auc": 0.9676144306536736
+    }
+  },
+  "top_words": {
+    "fraud_indicators": [
+      [
+        "link",
+        5.587770108872993
+      ],
+      [
+        "money",
+        4.80775698655932
+      ],
+      [
+        "aptitude",
+        4.6551273492353555
+      ],
+      [
+        "high school",
+        4.072224825670185
+      ],
+      [
+        "earn",
+        3.9404163102891094
+      ],
+      [
+        "000",
+        3.706997694202167
+      ],
+      [
+        "data entry",
+        3.693621482269729
+      ],
+      [
+        "staffing solutions",
+        3.679388963595849
+      ],
+      [
+        "leveraging",
+        3.516453587516105
+      ],
+      [
+        "email",
+        3.4307029014224786
+      ],
+      [
+        "new exciting",
+        3.392420436152659
+      ],
+      [
+        "phone",
+        3.3583783444941644
+      ],
+      [
+        "compensation package",
+        3.292956647206733
+      ],
+      [
+        "facilitating",
+        3.199015735506262
+      ],
+      [
+        "signing",
+        3.0670224789297795
+      ]
+    ],
+    "legit_indicators": [
+      [
+        "client",
+        -3.4867457440127105
+      ],
+      [
+        "english",
+        -3.366427734465817
+      ],
+      [
+        "companies",
+        -3.2799209079907863
+      ],
+      [
+        "team",
+        -3.1746914480026605
+      ],
+      [
+        "50",
+        -3.1067306613957784
+      ],
+      [
+        "growing",
+        -2.8992523361016898
+      ],
+      [
+        "recruitment",
+        -2.823085981972996
+      ],
+      [
+        "exceptional",
+        -2.7261665857749207
+      ],
+      [
+        "based",
+        -2.6948014403428315
+      ],
+      [
+        "successful",
+        -2.670245480274073
+      ],
+      [
+        "search",
+        -2.5332703536453813
+      ],
+      [
+        "fun",
+        -2.499411332951971
+      ],
+      [
+        "custom",
+        -2.4818082956285883
+      ],
+      [
+        "web",
+        -2.4347707688772617
+      ],
+      [
+        "software",
+        -2.4109897586969278
+      ]
+    ]
+  },
+  "decision_threshold": 0.3664,
+  "cv": {
+    "folds": 5,
+    "model": "Linear SVM",
+    "objective": "f1",
+    "target_recall": 0.9,
+    "metrics_at_threshold": {
+      "precision": 0.8807,
+      "recall": 0.8187,
+      "f1": 0.8486
+    },
+    "default_threshold_metrics": {
+      "precision": 0.9282,
+      "recall": 0.7518,
+      "f1": 0.83,
+      "roc_auc": 0.9891,
+      "pr_auc": 0.9024
+    }
+  }
+}

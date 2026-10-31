@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register — Sentinel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="scanline" aria-hidden="true"></div>
+
+<div class="auth-wrap">
+  <div class="auth-card card">
+    <div class="brand auth-brand">
+      <span class="brand-mark">◈</span>
+      <span class="brand-name">Sentinel</span>
+    </div>
+    <h1 class="auth-title">Create an account</h1>
+    <p class="auth-sub">Free, local to this server — used only to keep your scan history separate from other users.</p>
+
+    {% if error %}<p class="auth-error">{{ error }}</p>{% endif %}
+
+    <form method="POST" class="auth-form">
+      <label>Username
+        <input type="text" name="username" autocomplete="username" minlength="3" required autofocus>
+      </label>
+      <label>Password
+        <input type="password" name="password" autocomplete="new-password" minlength="6" required>
+      </label>
+      <label>Confirm password
+        <input type="password" name="confirm" autocomplete="new-password" minlength="6" required>
+      </label>
+      <button type="submit" class="btn btn-primary auth-submit">Create account</button>
+    </form>
+
+    <p class="auth-switch">Already have an account? <a href="{{ url_for('login') }}">Log in</a></p>
+  </div>
+</div>
+
+</body>
+</html>
