@@ -588,7 +588,7 @@ def report_pdf():
         return jsonify({"error": f"Could not build the PDF report: {e}"}), 500
 
     slug = re.sub(r"[^a-z0-9]+", "-", (record.get("title") or "job-posting").lower()).strip("-")[:60] or "job-posting"
-    filename = f"sentinel-report-{slug}.pdf"
+    filename = f"scamurai-report-{slug}.pdf"
 
     return send_file(
         BytesIO(pdf_bytes),
@@ -797,7 +797,7 @@ def scan_report_pdf(scan_id):
     slug = re.sub(r"[^a-z0-9]+", "-", (scan.title or "job-posting").lower()).strip("-")[:60] or "job-posting"
     return send_file(
         BytesIO(pdf_bytes), mimetype="application/pdf",
-        as_attachment=True, download_name=f"sentinel-report-{slug}.pdf",
+        as_attachment=True, download_name=f"scamurai-report-{slug}.pdf",
     )
 
 
