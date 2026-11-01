@@ -671,7 +671,7 @@ async function downloadReportPdf(record, result, meta, btn, reportId, verificati
     const slug = (record.title || "job-posting").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "job-posting";
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `sentinel-report-${slug}.pdf`;
+    a.download = `scamurai-report-${slug}.pdf`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -1150,7 +1150,7 @@ function downloadText(filename, text) {
 }
 
 $("batch-template-btn").addEventListener("click", () => {
-  downloadText("sentinel-batch-template.csv",
+  downloadText("scamurai-batch-template.csv",
     "title,company_profile,description,requirements,benefits,salary_range,employment_type,telecommuting,has_company_logo\n" +
     '"Data Entry Executive","","Work from home and earn 5000 per day. Pay a small registration fee. Contact on WhatsApp.","","","","Part-time",1,0\n' +
     '"Backend Engineer","Acme builds payment infrastructure.","Design and maintain scalable services.","3+ years Python","Health insurance","","Full-time",0,1\n');
@@ -1181,7 +1181,7 @@ $("batch-export-btn").addEventListener("click", () => {
   const lines = [header.join(",")].concat(batchRows.map(r =>
     [r.row, r.title, r.label, r.fraud_probability == null ? "" : r.fraud_probability,
      r.risk_level, r.red_flags.join("; ")].map(csvSafe).join(",")));
-  downloadText("sentinel-batch-results.csv", lines.join("\r\n"));
+  downloadText("scamurai-batch-results.csv", lines.join("\r\n"));
 });
 
 $("batch-run-btn").addEventListener("click", async () => {

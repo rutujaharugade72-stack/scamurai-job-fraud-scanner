@@ -214,7 +214,7 @@ def _footer(canvas, doc):
     canvas.line(18 * mm, 15 * mm, PAGE_W - 18 * mm, 15 * mm)
     canvas.setFont("Helvetica", 7.5)
     canvas.setFillColor(INK_DIM)
-    canvas.drawString(18 * mm, 11 * mm, "Sentinel — AI Job Posting Fraud Scanner  ·  Automated report, not legal or professional advice")
+    canvas.drawString(18 * mm, 11 * mm, "Scamurai — AI Job Posting Fraud Scanner  ·  Automated report, not legal or professional advice")
     canvas.drawRightString(PAGE_W - 18 * mm, 11 * mm, f"Page {doc.page}")
     canvas.restoreState()
 
@@ -283,8 +283,8 @@ def build_report_pdf(record: dict, result: dict, meta: dict | None = None, verif
     doc = BaseDocTemplate(
         buf, pagesize=A4,
         leftMargin=18 * mm, rightMargin=18 * mm, topMargin=16 * mm, bottomMargin=20 * mm,
-        title=f"Sentinel Fraud Report — {record.get('title') or 'Job Posting'}",
-        author="Sentinel Job Posting Fraud Scanner",
+        title=f"Scamurai Fraud Report — {record.get('title') or 'Job Posting'}",
+        author="Scamurai Job Posting Fraud Scanner",
     )
     frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id="main")
     doc.addPageTemplates([PageTemplate(id="report", frames=[frame], onPage=_footer)])
@@ -293,10 +293,10 @@ def build_report_pdf(record: dict, result: dict, meta: dict | None = None, verif
 
     # ---- Header -----------------------------------------------------
     generated_at = meta.get("generated_at") or datetime.now().strftime("%d %b %Y, %I:%M %p")
-    report_id = meta.get("report_id") or datetime.now().strftime("SNT-%Y%m%d-%H%M%S")
+    report_id = meta.get("report_id") or datetime.now().strftime("SCM-%Y%m%d-%H%M%S")
 
     header_tbl = Table(
-        [[Paragraph("◈ SENTINEL", ParagraphStyle("brand", fontName="Helvetica-Bold", fontSize=13, textColor=BRAND)),
+        [[Paragraph("◈ SCAMURAI", ParagraphStyle("brand", fontName="Helvetica-Bold", fontSize=13, textColor=BRAND)),
           Paragraph(f"Report ID: {report_id}<br/>Generated: {generated_at}", styles["Meta"])]],
         colWidths=[300, 194],
     )
