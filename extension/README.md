@@ -1,4 +1,4 @@
-# Sentinel Browser Extension
+# Scamurai Browser Extension
 
 Scans the job posting you're currently viewing on LinkedIn, Indeed, or
 Naukri without leaving the page — and without hitting the anti-bot
@@ -17,7 +17,7 @@ This extension sidesteps that entirely: the content script runs
 *inside your own browser tab*, where you're already logged in and the
 page is fully rendered. It reads the exact same `JobPosting` JSON-LD
 directly out of the live DOM (or falls back to the visible page text),
-and sends just that to your Sentinel backend — the same
+and sends just that to your Scamurai backend — the same
 `derive_fields()` pipeline the URL importer uses handles the rest.
 
 ## How it's wired
@@ -48,16 +48,16 @@ token instead of a login session — see `/api/account/token` and the
 
 ## Setup
 
-1. Run the Sentinel backend as usual: `pip install -r requirements.txt && python app.py`
+1. Run the Scamurai backend as usual: `pip install -r requirements.txt && python app.py`
 2. Log in to the web app, open the **About** tab, and click **Reveal**
    under "Browser Extension" to get your personal API token.
 3. In Chrome: `chrome://extensions` → enable **Developer mode** → **Load
    unpacked** → select this `extension/` folder.
-4. Click the Sentinel icon in the toolbar, paste the token (backend URL
+4. Click the Scamurai icon in the toolbar, paste the token (backend URL
    defaults to `http://127.0.0.1:5000`), and click **Save** — "Test
    connection" should show `Connected as <your username>`.
 5. Open any job posting on LinkedIn, Indeed, or Naukri and click the
-   floating **Scan with Sentinel** button.
+   floating **Scan with Scamurai** button.
 
 ## Files
 
@@ -80,4 +80,5 @@ token instead of a login session — see `/api/account/token` and the
 - The default `host_permissions` only cover `localhost`/`127.0.0.1`.
   Pointing the extension at a deployed backend triggers a one-time
   Chrome permission prompt (handled automatically in the popup).
+
 

@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Scamurai — Job Posting Fraud Scanner",
+  "name": "Scamurai - Job Posting Fraud Scanner",
   "version": "1.0.0",
   "description": "Scans job postings on LinkedIn, Indeed, Naukri, and more for fraud signals using ML.",
   "icons": {
@@ -55,3 +55,4 @@
     }
   ]
 }
+

@@ -9,7 +9,7 @@ async function getSettings() {
 async function callApi(path, { method = "GET", body } = {}) {
   const { backendUrl, apiToken } = await getSettings();
   if (!apiToken) {
-    return { ok: false, status: 401, data: { error: "No Sentinel API token configured yet. Click the extension icon and paste your token from the Sentinel web app (About tab)." } };
+    return { ok: false, status: 401, data: { error: "No Scamurai API token configured yet. Click the extension icon and paste your token from the Scamurai web app (About tab)." } };
   }
   let res;
   try {
@@ -22,7 +22,7 @@ async function callApi(path, { method = "GET", body } = {}) {
       body: body ? JSON.stringify(body) : undefined,
     });
   } catch (err) {
-    return { ok: false, status: 0, data: { error: `Could not reach ${backendUrl} — is the Sentinel server running? (${err.message})` } };
+    return { ok: false, status: 0, data: { error: `Could not reach ${backendUrl} — is the Scamurai server running? (${err.message})` } };
   }
   let data;
   try { data = await res.json(); } catch { data = {}; }
@@ -78,4 +78,5 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   })();
   return true; // keep the message channel open for the async response above
 });
+
 
