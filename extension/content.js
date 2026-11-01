@@ -1,6 +1,9 @@
 (function () {
-  if (window.__ScamuraiInjected) return;
-  window.__ScamuraiInjected = true;
+  // Remove existing host container if present from previous run
+  const existingHost = document.getElementById("Scamurai-ext-host");
+  if (existingHost) {
+    existingHost.remove();
+  }
 
   // ---------------------------------------------------------------
   // 1. Extraction — JobPosting JSON-LD -> Direct Platform DOM -> Fallback
@@ -25,48 +28,82 @@
   }
 
   function extractPlatformDomText() {
-    // 1. Specialized container targeting for LinkedIn, Indeed, and Naukri
     const jobDetailSelectors = [
       '#job-details',
       '.jobs-description__content',
       '.jobs-box__html-content',
       '.jobs-description-content__text',
       'article.jobs-description__container',
-      '.jobsearch-jobDescriptionText', // Indeed
-      '.styles_job-desc-container__txpYf', // Naukri
+      '.jobs-search__job-details--container',
+      '.job-view-layout',
+      '.jobs-description',
+      'main [tabindex="-1"]',
+      '#jobDescriptionText',
+      '.jobsearch-jobDescriptionText',
+      '.styles_job-desc-container__txpYf',
+      '.styles_JDC__dang-inner-html__h0K4t',
       '.job-desc',
       '.description__text'
     ];
 
+    let container = null;
     for (const selector of jobDetailSelectors) {
-      const container = document.querySelector(selector);
-      if (container && (container.innerText || "").trim().length > 80) {
-        const title = document.querySelector('h1, .job-details-jobs-unified-top-card__job-title')?.innerText?.trim() || document.title;
-        const company = document.querySelector('a[href*="/company/"], .jobsearch-CompanyInfoContainer, .styles_job-header-comp-name__jJ0be')?.innerText?.trim() || "";
-        return `${title}\n${company}\n\n${container.innerText.trim()}`.slice(0, 9000);
+      const el = document.querySelector(selector);
+      if (el && (el.innerText || "").trim().length > 80) {
+        container = el;
+        break;
       }
     }
+
+    if (!container) {
+      const headings = Array.from(document.querySelectorAll("h2, h3, h4, strong, span"));
+      const aboutHeading = headings.find(h => /about the job|job description/i.test(h.innerText?.trim() || ""));
+      if (aboutHeading) {
+        const parentBlock = aboutHeading.closest("section, article, div.jobs-description, div[class*='description']");
+        if (parentBlock && (parentBlock.innerText || "").trim().length > 80) {
+          container = parentBlock;
+        } else if (aboutHeading.parentElement && (aboutHeading.parentElement.innerText || "").trim().length > 80) {
+          container = aboutHeading.parentElement;
+        }
+      }
+    }
+
+    if (container) {
+      const title = document.querySelector('h1, .job-details-jobs-unified-top-card__job-title, [class*="job-title"]')?.innerText?.trim() || document.title;
+      const company = document.querySelector('a[href*="/company/"], .jobsearch-CompanyInfoContainer, .styles_job-header-comp-name__jJ0be, [class*="company-name"]')?.innerText?.trim() || "";
+      return `${title}\n${company}\n\n${container.innerText.trim()}`.slice(0, 9000);
+    }
+
     return null;
   }
 
   function extractFallbackText() {
-    // Try targeted platform containers first
-    const platformText = extractPlatformDomText();
-    if (platformText && platformText.length >= 100) {
-      return platformText;
+    let text = extractPlatformDomText();
+    if (text && text.length >= 100) {
+      copyToClipboard(text);
+      return text;
     }
 
-    // Generic paragraph/heading fallback
     const blocks = Array.from(document.querySelectorAll(
       "main p, article p, main li, article li, main div, article div, [class*='description']"
     ));
-    let text = blocks.map(el => (el.innerText || "").trim()).filter(t => t.length > 25).join("\n");
+    text = blocks.map(el => (el.innerText || "").trim()).filter(t => t.length > 25).join("\n");
+
     if (text.length < 150) {
       text = Array.from(document.querySelectorAll("p, li, h2, h3, h4, span"))
         .map(el => (el.innerText || "").trim())
         .filter(t => t.length > 25).join("\n").slice(0, 8000);
     }
-    return `${document.title}\n\n${text}`.slice(0, 9000);
+
+    const fullResult = `${document.title}\n\n${text}`.slice(0, 9000);
+    copyToClipboard(fullResult);
+    return fullResult;
+  }
+
+  function copyToClipboard(val) {
+    if (navigator.clipboard && navigator.clipboard.writeText && val) {
+      navigator.clipboard.writeText(val).catch(() => {});
+    }
   }
 
   // ---------------------------------------------------------------
@@ -83,28 +120,29 @@
   }
 
   function extractAboutCompanySection() {
-    const headingEls = Array.from(document.querySelectorAll("h1, h2, h3, h4, span, strong"));
-    const heading = headingEls.find(el => {
-      const t = el.textContent.trim().toLowerCase();
-      return t === "about the company" || t === "about us" || t === "company overview";
-    });
-    if (!heading) return "";
+    try {
+      const headingEls = Array.from(document.querySelectorAll("h1, h2, h3, h4, span, strong"));
+      const heading = headingEls.find(el => {
+        const t = (el.textContent || "").trim().toLowerCase();
+        return t === "about the company" || t === "about us" || t === "company overview";
+      });
+      if (!heading || !heading.parentElement) return "";
 
-    let container = heading.parentElement;
-    let text = "";
-    for (let i = 0; i < 6 && container; i++) {
-      text = (container.innerText || "").trim();
-      if (text.length > heading.textContent.trim().length + 60) break;
-      container = container.parentElement;
+      let container = heading.parentElement;
+      let text = "";
+      for (let i = 0; i < 6 && container; i++) {
+        text = (container.innerText || "").trim();
+        if (text.length > ((heading.textContent || "").trim().length + 60)) break;
+        container = container.parentElement;
+      }
+      if (!text || typeof text !== "string") return "";
+
+      text = text.replace(/about the company/i, "").replace(/^\s*follow\s*/im, "");
+      text = text.split(/\bshow more\b/i)[0] || "";
+      return text.trim().slice(0, 6000);
+    } catch (e) {
+      return "";
     }
-    if (!text) return "";
-
-    text = text.replace(/about the company/i, "").replace(/^\s*follow\s*/im, "");
-    text = text.split(/\bshow more\b/i)[0];
-    text = text.split("\n").map(l => l.trim()).filter(l =>
-      l && !/^(\u2022|\u00b7)$/.test(l) && !/^[\d,.]+[kKmM]?\+?\s+(followers|on linkedin)$/i.test(l) &&
-      !/^[\d,]+(-[\d,]+|\+)?\s+employees$/i.test(l) && !/^(\u2026|\.{3})\s*more$/i.test(l)).join("\n");
-    return text.replace(/\s*(\u2026|\.{3})\s*more\s*$/i, "").trim().slice(0, 6000);
   }
 
   function detectCompanyLogo(companyName) {
@@ -164,7 +202,25 @@
   // 2. Messaging helpers
   // ---------------------------------------------------------------
   function send(message) {
-    return new Promise(resolve => chrome.runtime.sendMessage(message, resolve));
+    return new Promise(resolve => {
+      try {
+        if (!chrome.runtime?.id) {
+          alert("Scamurai was updated. Please refresh this page (F5) to re-sync.");
+          resolve({ ok: false, data: { error: "Please refresh the page." } });
+          return;
+        }
+        chrome.runtime.sendMessage(message, res => {
+          if (chrome.runtime.lastError) {
+            resolve({ ok: false, data: { error: chrome.runtime.lastError.message } });
+          } else {
+            resolve(res);
+          }
+        });
+      } catch (err) {
+        alert("Extension reloaded. Please refresh this page (F5).");
+        resolve({ ok: false, data: { error: err.message } });
+      }
+    });
   }
 
   // ---------------------------------------------------------------
@@ -172,7 +228,7 @@
   // ---------------------------------------------------------------
   const host = document.createElement("div");
   host.id = "Scamurai-ext-host";
-  document.documentElement.appendChild(host);
+  (document.body || document.documentElement).appendChild(host);
   const shadow = host.attachShadow({ mode: "open" });
 
   const styleTag = document.createElement("style");
@@ -331,8 +387,9 @@
       const extractedText = extractFallbackText();
       importRes = await send({ type: "IMPORT_TEXT", text: extractedText });
     }
-    if (!importRes.ok || !importRes.data.success) {
-      renderError(importRes.data?.error || "Couldn't read this job posting. Try the 'Paste posting text' option in the Scamurai web app instead.");
+    if (!importRes.ok || !importRes.data?.success) {
+      const serverMsg = importRes.data?.error || importRes.data?.message || importRes.data?.detail || JSON.stringify(importRes.data);
+      renderError(`Backend status ${importRes.status}: ${serverMsg}`);
       return;
     }
     const record = importRes.data.job;
