@@ -1,14 +1,9 @@
-
-
 (function () {
   if (window.__ScamuraiInjected) return;
   window.__ScamuraiInjected = true;
 
   // ---------------------------------------------------------------
-  // 1. Extraction — prefer the page's own JobPosting JSON-LD (same
-  //    schema.org data Google uses for "Jobs" search results); it's
-  //    clean and structured. Fall back to a generic "largest text
-  //    block" scrape when a page doesn't publish it.
+  // 1. Extraction — JobPosting JSON-LD -> Direct Platform DOM -> Fallback
   // ---------------------------------------------------------------
   function findJobPostingJsonLd() {
     const tags = document.querySelectorAll('script[type="application/ld+json"]');
@@ -29,36 +24,59 @@
     return null;
   }
 
+  function extractPlatformDomText() {
+    // 1. Specialized container targeting for LinkedIn, Indeed, and Naukri
+    const jobDetailSelectors = [
+      '#job-details',
+      '.jobs-description__content',
+      '.jobs-box__html-content',
+      '.jobs-description-content__text',
+      'article.jobs-description__container',
+      '.jobsearch-jobDescriptionText', // Indeed
+      '.styles_job-desc-container__txpYf', // Naukri
+      '.job-desc',
+      '.description__text'
+    ];
+
+    for (const selector of jobDetailSelectors) {
+      const container = document.querySelector(selector);
+      if (container && (container.innerText || "").trim().length > 80) {
+        const title = document.querySelector('h1, .job-details-jobs-unified-top-card__job-title')?.innerText?.trim() || document.title;
+        const company = document.querySelector('a[href*="/company/"], .jobsearch-CompanyInfoContainer, .styles_job-header-comp-name__jJ0be')?.innerText?.trim() || "";
+        return `${title}\n${company}\n\n${container.innerText.trim()}`.slice(0, 9000);
+      }
+    }
+    return null;
+  }
+
   function extractFallbackText() {
+    // Try targeted platform containers first
+    const platformText = extractPlatformDomText();
+    if (platformText && platformText.length >= 100) {
+      return platformText;
+    }
+
+    // Generic paragraph/heading fallback
     const blocks = Array.from(document.querySelectorAll(
-      "main p, article p, main li, article li, main h2, main h3, main h4, article h2, article h3, article h4, [class*='description'] p, [class*='description'] li"
+      "main p, article p, main li, article li, main div, article div, [class*='description']"
     ));
-    let text = blocks.map(el => el.innerText.trim()).filter(t => t.length > 5).join("\n");
+    let text = blocks.map(el => (el.innerText || "").trim()).filter(t => t.length > 25).join("\n");
     if (text.length < 150) {
-      // last resort: any paragraph/list item/heading on the page
-      text = Array.from(document.querySelectorAll("p, li, h2, h3, h4")).map(el => el.innerText.trim())
-        .filter(t => t.length > 5).join("\n").slice(0, 8000);
+      text = Array.from(document.querySelectorAll("p, li, h2, h3, h4, span"))
+        .map(el => (el.innerText || "").trim())
+        .filter(t => t.length > 25).join("\n").slice(0, 8000);
     }
     return `${document.title}\n\n${text}`.slice(0, 9000);
   }
 
   // ---------------------------------------------------------------
-  // 1b. DOM enrichment — some page chrome (LinkedIn's "About the
-  //     company" panel and its logo, for example) is rendered by the
-  //     host site's own widgets, entirely separate from the JobPosting
-  //     JSON-LD or the main article text. JSON-LD / text extraction can
-  //     legitimately miss it even though it's clearly visible on screen.
-  //     Since this script runs inside the real, logged-in, fully
-  //     rendered page, we can just read it straight off the DOM instead
-  //     of relying on the job-description text alone.
+  // 1b. DOM enrichment
   // ---------------------------------------------------------------
   function getCompanyNameFromDom(jsonld) {
     if (jsonld && jsonld.hiringOrganization) {
       const org = Array.isArray(jsonld.hiringOrganization) ? jsonld.hiringOrganization[0] : jsonld.hiringOrganization;
       if (org && org.name) return org.name;
     }
-    // A link to a /company/ page is a stable pattern (LinkedIn, and many
-    // ATS-hosted career pages) regardless of how obfuscated the CSS classes are.
     const orgLink = document.querySelector('a[href*="/company/"]');
     if (orgLink && orgLink.textContent.trim()) return orgLink.textContent.trim();
     return "";
@@ -83,11 +101,10 @@
 
     text = text.replace(/about the company/i, "").replace(/^\s*follow\s*/im, "");
     text = text.split(/\bshow more\b/i)[0];
-    // drop follower/size stats, bullets and "… more" markers (server also re-cleans)
     text = text.split("\n").map(l => l.trim()).filter(l =>
-      l && !/^(•|·)$/.test(l) && !/^[\d,.]+[kKmM]?\+?\s+(followers|on linkedin)$/i.test(l) &&
-      !/^[\d,]+(-[\d,]+|\+)?\s+employees$/i.test(l) && !/^(…|\.{3})\s*more$/i.test(l)).join("\n");
-    return text.replace(/\s*(…|\.{3})\s*more\s*$/i, "").trim().slice(0, 6000);
+      l && !/^(\u2022|\u00b7)$/.test(l) && !/^[\d,.]+[kKmM]?\+?\s+(followers|on linkedin)$/i.test(l) &&
+      !/^[\d,]+(-[\d,]+|\+)?\s+employees$/i.test(l) && !/^(\u2026|\.{3})\s*more$/i.test(l)).join("\n");
+    return text.replace(/\s*(\u2026|\.{3})\s*more\s*$/i, "").trim().slice(0, 6000);
   }
 
   function detectCompanyLogo(companyName) {
@@ -111,14 +128,9 @@
   }
 
   function detectWorkplaceTypeBadge() {
-    // LinkedIn (and many ATS pages) show an explicit "On-site" / "Hybrid" /
-    // "Remote" pill right next to the job title — that's the authoritative
-    // signal, not a keyword guess off the description text. Scope the
-    // search to the main job-details panel so we don't pick up an
-    // unrelated badge from a different job card in a list sidebar.
     const scope = document.querySelector("main") || document.body;
     const candidates = Array.from(scope.querySelectorAll("span, button, li, div"))
-      .filter(el => el.children.length === 0); // leaf nodes only — the badge's own text, not a wrapper
+      .filter(el => el.children.length === 0);
     for (const el of candidates) {
       const t = el.textContent.trim().toLowerCase();
       if (t === "remote") return "remote";
@@ -139,9 +151,6 @@
     if (detectCompanyLogo(companyName)) {
       record.has_company_logo = 1;
     }
-    // Explicit workplace-type badge wins outright over any keyword guess
-    // the server-side text parser already made (e.g. "on-site" role whose
-    // description happens to mention "remote stakeholders").
     const workplaceType = detectWorkplaceTypeBadge();
     if (workplaceType === "remote") {
       record.telecommuting = 1;
@@ -159,8 +168,7 @@
   }
 
   // ---------------------------------------------------------------
-  // 3. Floating action button + overlay panel, in a shadow root so the
-  //    host page's CSS can never bleed into Scamurai's UI or vice versa.
+  // 3. Floating action button + overlay panel
   // ---------------------------------------------------------------
   const host = document.createElement("div");
   host.id = "Scamurai-ext-host";
@@ -320,7 +328,8 @@
     if (jsonld) {
       importRes = await send({ type: "IMPORT_JSONLD", jsonld, url: location.href });
     } else {
-      importRes = await send({ type: "IMPORT_TEXT", text: extractFallbackText() });
+      const extractedText = extractFallbackText();
+      importRes = await send({ type: "IMPORT_TEXT", text: extractedText });
     }
     if (!importRes.ok || !importRes.data.success) {
       renderError(importRes.data?.error || "Couldn't read this job posting. Try the 'Paste posting text' option in the Scamurai web app instead.");
@@ -341,5 +350,3 @@
 
   fab.addEventListener("click", runScan);
 })();
-
-

@@ -1,4 +1,4 @@
-"""Security helpers for Sentinel.
+"""Security helpers for Scamurai.
 
 * validate_public_url / safe_get  - SSRF protection for the URL importer.
 * safe_next_url                   - open-redirect protection for ?next=.
