@@ -123,6 +123,11 @@ def load_user_from_token(req):
     if not token:
         return None
     return User.query.filter_by(api_token=token).first()
+@login_manager.unauthorized_handler
+def unauthorized_callback():
+    if request.path.startswith("/api/"):
+        return jsonify({"success": False, "error": "Unauthorized or invalid API token"}), 401
+    return redirect(url_for("login"))
 
 
 with app.app_context():
@@ -797,7 +802,7 @@ def scan_report_pdf(scan_id):
     slug = re.sub(r"[^a-z0-9]+", "-", (scan.title or "job-posting").lower()).strip("-")[:60] or "job-posting"
     return send_file(
         BytesIO(pdf_bytes), mimetype="application/pdf",
-        as_attachment=True, download_name=f"scamurai-report-{slug}.pdf",
+        
     )
 
 
