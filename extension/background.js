@@ -1,5 +1,5 @@
 
-const DEFAULT_BACKEND = "https://sentinel-job-fraud-scanner.onrender.com";
+const DEFAULT_BACKEND = "https://scamurai-scanner.onrender.com";
 
 async function getSettings() {
   const { backendUrl, apiToken } = await chrome.storage.sync.get(["backendUrl", "apiToken"]);
@@ -78,3 +78,4 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   })();
   return true; // keep the message channel open for the async response above
 });
+

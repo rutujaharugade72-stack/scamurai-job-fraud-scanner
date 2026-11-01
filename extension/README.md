@@ -80,3 +80,4 @@ token instead of a login session — see `/api/account/token` and the
 - The default `host_permissions` only cover `localhost`/`127.0.0.1`.
   Pointing the extension at a deployed backend triggers a one-time
   Chrome permission prompt (handled automatically in the popup).
+

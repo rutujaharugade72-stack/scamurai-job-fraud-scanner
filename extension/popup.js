@@ -1,5 +1,5 @@
 const $ = id => document.getElementById(id);
-const DEFAULT_BACKEND = "https://sentinel-job-fraud-scanner.onrender.com";
+const DEFAULT_BACKEND = "https://scamurai-scanner.onrender.com";
 
 function showStatus(msg, ok) {
   const el = $("status");
@@ -61,3 +61,4 @@ $("save-btn").addEventListener("click", async () => {
 $("test-btn").addEventListener("click", () => checkConnection(false));
 
 load();
+

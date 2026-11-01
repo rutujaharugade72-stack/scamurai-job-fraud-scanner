@@ -341,3 +341,4 @@
 
   fab.addEventListener("click", runScan);
 })();
+
