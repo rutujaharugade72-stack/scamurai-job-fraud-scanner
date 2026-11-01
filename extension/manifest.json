@@ -1,4 +1,4 @@
-{
+﻿{
   "manifest_version": 3,
   "name": "Scamurai — Job Posting Fraud Scanner",
   "version": "1.0.0",
@@ -28,7 +28,7 @@
   "host_permissions": [
     "http://127.0.0.1:5000/*",
     "http://localhost:5000/*",
-    "https://sentinel-job-fraud-scanner.onrender.com/*"
+    "https://scamurai-job-fraud-scanner.onrender.com/*"
   ],
   "optional_host_permissions": [
     "http://*/*",
