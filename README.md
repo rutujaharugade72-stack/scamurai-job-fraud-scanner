@@ -1,4 +1,4 @@
-# Sentinel — AI Job Posting Fraud Scanner
+﻿# Scamurai — AI Job Posting Fraud Scanner
 
 A machine-learning web application that detects fraudulent job postings.
 Built as an academic project demonstrating a complete, end-to-end ML system:
@@ -9,7 +9,7 @@ browser extension.
 
 ## Live Deployments & Store Access
 
-- **Live Web Portal:** [https://sentinel-job-fraud-scanner.onrender.com](https://sentinel-job-fraud-scanner.onrender.com)
+- **Live Web Portal:** [https://Scamurai-job-fraud-scanner.onrender.com](https://Scamurai-job-fraud-scanner.onrender.com)
 - **Server Keep-Alive Monitoring:** Active 5-minute automated ping via [cron-job.org](https://cron-job.org) (prevents Render free-tier cold starts).
 - **Chrome Web Store:** *Package submitted, awaiting Google review.*
 
@@ -20,7 +20,7 @@ browser extension.
 - **Two ways to analyze a posting**
   - **Manual entry** — fill in the job title, description, requirements, etc.
   - **Import from a link or pasted text** — paste a URL (LinkedIn, Indeed,
-    Naukri, Apna, Greenhouse, Lever, or a company careers page) and Sentinel
+    Naukri, Apna, Greenhouse, Lever, or a company careers page) and Scamurai
     extracts the job details from the site's structured job-posting data
     (schema.org JobPosting markup, the same data used by Google Jobs). If a
     site blocks automated access, you can paste the job text instead.
@@ -75,7 +75,7 @@ browser extension.
   fraud trend, verdict split, most common risk signals, top
   fraud-indicating words, and a fraud breakdown by employment type. Charts
   are hand-written inline SVG, so the dashboard works offline.
-- **Browser extension** (`extension/`) — adds a "Scan with Sentinel" button
+- **Browser extension** (`extension/`) — adds a "Scan with Scamurai" button
   on job pages. It reads the page's structured job data from the live,
   logged-in page instead of fetching the URL from the server, which avoids
   the anti-bot blocks that stop the URL importer. Enabled sites: LinkedIn,
@@ -212,8 +212,8 @@ Never commit `.env` to Git — it contains your database password.
    mode, and choose **Load unpacked**, then select the `extension` folder.
 2. In the web app, open the **About** tab and copy your API token.
 3. Click the extension icon, paste the token, keep the backend URL as
-   `http://127.0.0.1:5000` (or `https://sentinel-job-fraud-scanner.onrender.com`), and press **Test connection**.
-4. Open a job on a supported site and click **Scan with Sentinel**.
+   `http://127.0.0.1:5000` (or `https://Scamurai-job-fraud-scanner.onrender.com`), and press **Test connection**.
+4. Open a job on a supported site and click **Scan with Scamurai**.
 
 The app must be running locally or pointed to the live Render backend for the extension to work.
 
@@ -228,7 +228,7 @@ The app must be running locally or pointed to the live Render backend for the ex
   enabled in `manifest.json`, but not every site publishes structured job
   data, so results may vary until each one is tested.
 - The dashboard groups scans by UTC date.
-- Set `SENTINEL_SECRET_KEY` and `SENTINEL_ENV=production` for any real deployment (see **Deploying**).
+- Set `Scamurai_SECRET_KEY` and `Scamurai_ENV=production` for any real deployment (see **Deploying**).
 - This tool gives a statistical prediction based on patterns in historical
   data. It is a **decision-support aid**, not a guarantee. Always verify an
   employer independently before sharing personal information or applying.
@@ -241,7 +241,7 @@ The app must be running locally or pointed to the live Render backend for the ex
 |---|---|
 | **Batch scanning** | New **Batch** tab and `POST /api/batch-scan`: upload a CSV (max 200 rows), get a verdict, fraud probability, risk band (High / Medium / Low) and rule-based red flags per row. Optionally save every row to History; export results as CSV (formula-injection safe). |
 | **Honest evaluation** | `src/evaluate_cv.py` runs 5-fold stratified cross-validation (features re-fit inside each fold), reports precision / recall / F1 / ROC-AUC / **PR-AUC** as mean ± std, and sweeps the decision threshold. Output: `assets/cv_report.txt`, `assets/pr_curve.png`. |
-| **Tuned decision threshold** | The live model now uses a tuned threshold (stored in `models/model_info.json`) instead of a fixed 0.5. Override at runtime with `SENTINEL_DECISION_THRESHOLD`. |
+| **Tuned decision threshold** | The live model now uses a tuned threshold (stored in `models/model_info.json`) instead of a fixed 0.5. Override at runtime with `Scamurai_DECISION_THRESHOLD`. |
 | **SSRF protection** | The URL importer only fetches public `http(s)` addresses: private/loopback/link-local/cloud-metadata IPs are rejected, every redirect hop is re-validated, redirects and response size are capped. |
 | **Hardening** | No hard-coded secret key (random per-process key + warning if unset), `.env` is now read *before* settings, `Secure`/`HttpOnly`/`SameSite` cookies, security headers, open-redirect fix on `?next=`, request-size cap, per-IP / per-user rate limiting (HTTP 429), demo account disabled in production. |
 | **Ops & Uptime** | `Dockerfile` (non-root, gunicorn, healthcheck), `docker-compose.yml`, `GET /api/health`, GitHub Actions CI, 55 automated tests, live deployment on Render, and automated 5-minute keep-alive scheduling via cron-job.org. |
@@ -285,14 +285,14 @@ per-user data isolation, prediction, batch upload validation, and the decision t
 
 ```bash
 # 1. create .env from the example and set a real secret
-cp .env.example .env            # then edit: SENTINEL_SECRET_KEY=<64 random hex chars>
+cp .env.example .env            # then edit: Scamurai_SECRET_KEY=<64 random hex chars>
 # 2. run
 docker compose up --build       # http://localhost:5000
 ```
 
 For a public deployment (Render, Railway, Fly.io, Hugging Face Spaces, ...):
-set `SENTINEL_ENV=production`, `SENTINEL_SECRET_KEY`, and `DATABASE_URL` (Postgres) as environment
-variables on the host, serve over **https**, and remove `SENTINEL_COOKIE_SECURE: "0"` from
+set `Scamurai_ENV=production`, `Scamurai_SECRET_KEY`, and `DATABASE_URL` (Postgres) as environment
+variables on the host, serve over **https**, and remove `Scamurai_COOKIE_SECURE: "0"` from
 `docker-compose.yml`. The dataset (`data/fake_job_postings.csv`) is only needed for retraining and
 is not part of the image. Rate limiting is per gunicorn worker; use Redis-backed limiting if you scale out.
 
