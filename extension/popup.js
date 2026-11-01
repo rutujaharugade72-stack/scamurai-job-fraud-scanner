@@ -31,13 +31,15 @@ async function checkConnection(afterSave) {
   testBtn.textContent = "Testing...";
   const ping = await chrome.runtime.sendMessage({ type: "PING_BACKEND" });
   if (!ping.reachable) {
-    showStatus(`Can't reach the backend. Is "python app.py" running?`, false);
-    testBtn.disabled = false; testBtn.textContent = "Test connection";
+    showStatus(`Can't reach the backend. Check your URL and connection.`, false);
+    testBtn.disabled = false;
+    testBtn.textContent = "Test connection";
     return;
   }
   const who = await chrome.runtime.sendMessage({ type: "WHOAMI" });
   if (who.ok) {
-    showStatus(`Connected as ${who.data.username}`, true);
+    const username = who?.username || who?.data?.username || who?.data?.user || who?.user || who?.email || "User";
+    showStatus(`Connected as ${username}`, true);
   } else {
     showStatus(who.data?.error || "Backend reachable, but the token was rejected.", false);
   }
@@ -61,5 +63,3 @@ $("save-btn").addEventListener("click", async () => {
 $("test-btn").addEventListener("click", () => checkConnection(false));
 
 load();
-
-
