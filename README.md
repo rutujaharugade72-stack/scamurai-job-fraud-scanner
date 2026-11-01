@@ -5,6 +5,16 @@ Built as an academic project demonstrating a complete, end-to-end ML system:
 data pipeline → model training/evaluation → REST API → interactive web UI →
 browser extension.
 
+---
+
+## Live Deployments & Store Access
+
+- **Live Web Portal:** [https://sentinel-job-fraud-scanner.onrender.com](https://sentinel-job-fraud-scanner.onrender.com)
+- **Server Keep-Alive Monitoring:** Active 5-minute automated ping via [cron-job.org](https://cron-job.org) (prevents Render free-tier cold starts).
+- **Chrome Web Store:** *Package submitted, awaiting Google review.*
+
+---
+
 ## Features
 
 - **Two ways to analyze a posting**
@@ -14,6 +24,8 @@ browser extension.
     extracts the job details from the site's structured job-posting data
     (schema.org JobPosting markup, the same data used by Google Jobs). If a
     site blocks automated access, you can paste the job text instead.
+- **Mobile-Responsive UI** — full mobile-first optimization across login,
+  registration, and analysis forms with native-friendly password visibility toggles.
 - **ML-backed verdict** with a confidence gauge and a legitimate/fraudulent
   probability breakdown.
 - **Explainability** (`src/explain.py`), two layers:
@@ -71,7 +83,7 @@ browser extension.
   Wellfound (see the limitations section for what has been tested). See
   `extension/README.md`.
 - Custom dark UI in plain HTML/CSS/JS, served by a Flask backend. Runs on
-  **localhost**.
+  **localhost** or live in production on Render.
 
 ---
 
@@ -166,6 +178,7 @@ per-model comparison.
 # 1. Create and activate a virtual environment (recommended)
 python -m venv venv
 venv\Scripts\activate          # Windows
+# source venv/bin/activate     # macOS / Linux
 
 # 2. Install dependencies
 pip install -r requirements.txt
@@ -199,10 +212,10 @@ Never commit `.env` to Git — it contains your database password.
    mode, and choose **Load unpacked**, then select the `extension` folder.
 2. In the web app, open the **About** tab and copy your API token.
 3. Click the extension icon, paste the token, keep the backend URL as
-   `http://127.0.0.1:5000`, and press **Test connection**.
+   `http://127.0.0.1:5000` (or `https://sentinel-job-fraud-scanner.onrender.com`), and press **Test connection**.
 4. Open a job on a supported site and click **Scan with Sentinel**.
 
-The app must be running locally for the extension to work.
+The app must be running locally or pointed to the live Render backend for the extension to work.
 
 ---
 
@@ -220,7 +233,6 @@ The app must be running locally for the extension to work.
   data. It is a **decision-support aid**, not a guarantee. Always verify an
   employer independently before sharing personal information or applying.
 
-
 ---
 
 ## What's new in v2
@@ -232,7 +244,7 @@ The app must be running locally for the extension to work.
 | **Tuned decision threshold** | The live model now uses a tuned threshold (stored in `models/model_info.json`) instead of a fixed 0.5. Override at runtime with `SENTINEL_DECISION_THRESHOLD`. |
 | **SSRF protection** | The URL importer only fetches public `http(s)` addresses: private/loopback/link-local/cloud-metadata IPs are rejected, every redirect hop is re-validated, redirects and response size are capped. |
 | **Hardening** | No hard-coded secret key (random per-process key + warning if unset), `.env` is now read *before* settings, `Secure`/`HttpOnly`/`SameSite` cookies, security headers, open-redirect fix on `?next=`, request-size cap, per-IP / per-user rate limiting (HTTP 429), demo account disabled in production. |
-| **Ops** | `Dockerfile` (non-root, gunicorn, healthcheck), `docker-compose.yml`, `GET /api/health`, GitHub Actions CI, 55 automated tests. |
+| **Ops & Uptime** | `Dockerfile` (non-root, gunicorn, healthcheck), `docker-compose.yml`, `GET /api/health`, GitHub Actions CI, 55 automated tests, live deployment on Render, and automated 5-minute keep-alive scheduling via cron-job.org. |
 
 ### Measured model performance (read this before quoting numbers)
 
@@ -267,6 +279,8 @@ python -m pytest -q
 55 tests cover the SSRF guard, open-redirect guard, rate limiter, red-flag rules, auth flow,
 per-user data isolation, prediction, batch upload validation, and the decision threshold.
 
+---
+
 ## Deploying
 
 ```bash
@@ -283,10 +297,10 @@ variables on the host, serve over **https**, and remove `SENTINEL_COOKIE_SECURE:
 is not part of the image. Rate limiting is per gunicorn worker; use Redis-backed limiting if you scale out.
 
 ### Security notes
-* `.env` is git-ignored. If a database password or API key was ever committed or shared, rotate it.
-* The login/register forms rely on `SameSite=Lax` cookies rather than CSRF tokens; add Flask-WTF if
+- `.env` is git-ignored. If a database password or API key was ever committed or shared, rotate it.
+- The login/register forms rely on `SameSite=Lax` cookies rather than CSRF tokens; add Flask-WTF if
   you expose the app on a shared domain.
-* `safe_get` validates DNS before connecting; for a hardened deployment also block outbound access
+- `safe_get` validates DNS before connecting; for a hardened deployment also block outbound access
   to internal networks at the firewall.
 
 ---
@@ -294,7 +308,7 @@ is not part of the image. Rate limiting is per gunicorn worker; use Redis-backed
 ## What I changed
 
 The first two items came from an updated version of the project that I
-merged in. Items 3 to 12 are my own additions.
+merged in. Items 3 to 14 are my own additions.
 
 **Merged from the updated version**
 
@@ -336,6 +350,8 @@ merged in. Items 3 to 12 are my own additions.
     comparison before optionally overwriting the live model (`--apply`).
 12. Model Insights tab: `/api/model-info` now also reports live feedback
     counts, and the UI shows a new "Feedback collected" card.
+13. Mobile responsiveness overhaul: styled login/register forms for mobile viewports, fixed native browser password toggle overlap conflicts with custom visibility toggles, and improved viewport touch targets.
+14. Production deployment & keep-alive: deployed the Flask application to Render and integrated a 5-minute cron-job.org monitor to eliminate free-tier container sleep/cold-start latency.
 
 ---
 
@@ -344,4 +360,4 @@ merged in. Items 3 to 12 are my own additions.
 - Multi-language support for non-English postings
 - Testing and fixing the extension on every listed job site
 - Admin page with overall statistics
-- Chrome Web Store packaging (signed, auto-updating) instead of "load unpacked"
+- Chrome Web Store public release following store review completion
